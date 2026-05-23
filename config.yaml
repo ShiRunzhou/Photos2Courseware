@@ -1,0 +1,71 @@
+# ============================================================
+# 照片→培训课件 通用配置文件
+# ============================================================
+# 用法：
+#   python batch_extract.py --config config.yaml --dir "D:\照片目录"
+#   python cluster.py --dir "D:\照片目录"
+# ============================================================
+
+# ---------- 场景信息 ----------
+scene:
+  name: "培训场景名称"
+  photo_dir: ""                     # 照片文件夹路径（可被 --dir 覆盖）
+  output_dir: "{photo_dir}/output"  # 最终产出目录
+
+# ---------- 视觉模型（图像识别） ----------
+# 支持本地模型或云端 API（OpenAI 兼容格式）
+vl_model:
+  # ---- 本地模型示例 ----
+  # endpoint: "http://192.168.2.20:1234/v1/chat/completions"
+  # model_name: "qwen/qwen3-vl-8b"
+  # api_key: ""                     # 本地模型留空
+
+  # ---- 云端模型示例 ----
+  # endpoint: "https://api.openai.com/v1/chat/completions"
+  # model_name: "gpt-4o"
+  # api_key: "sk-xxxxxxxx"          # 云端模型需要填写
+
+  endpoint: "http://192.168.2.20:1234/v1/chat/completions"
+  model_name: "qwen/qwen3-vl-8b"
+  api_key: ""                       # 本地留空，云端填写 API Key
+  timeout: 300
+  max_retries: 2
+
+# ---------- 文本模型（讲义补全） ----------
+# 第五阶段框架补全时使用（可选，WorkBuddy 对话可替代）
+llm:
+  endpoint: "http://192.168.2.20:1234/v1/chat/completions"
+  model_name: "qwen/qwen3.5-9b"
+  api_key: ""
+  timeout: 300
+  max_retries: 2
+
+# ---------- 内容类型 ----------
+content_types:
+  detect_and_extract_prompt: |
+    请严格按以下格式输出，先判断类型再提取内容：
+    [TYPE]: <类型标签>
+    [CONTENT]:
+    <提取的全部内容>
+    类型标签：mindmap(思维导图) | text_slide(PPT课件) | flowchart(流程图)
+    | table(表格) | material_photo(纸质材料) | scene(实操场景)
+  detect_prompt: |
+    判断照片内容类型，只回答以下标签之一：
+    mindmap | text_slide | flowchart | table | material_photo | scene
+  extract_prompts:
+    mindmap: "提取思维导图的完整层级结构，用嵌套列表输出，保留标题层级。"
+    text_slide: "提取PPT全部文字，保持标题层级和列表序号。"
+    flowchart: "提取流程图节点文字，用 → 表示流向关系。"
+    table: "提取表格为Markdown格式，保留表头行列。"
+    material_photo: "描述内容并提取所有文字标签，按分类整理。"
+    scene: "描述场景中的设备和动作，提取可见的标注文字。"
+
+# ---------- 知识模块定义 ----------
+# 按培训主题自定义模块名和匹配关键词
+modules:
+  - id: A
+    label: "模块A名称"
+    keywords: ["关键词1", "关键词2"]
+  - id: B
+    label: "模块B名称"
+    keywords: ["关键词3", "关键词4"]
